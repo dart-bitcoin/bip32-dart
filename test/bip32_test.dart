@@ -1,6 +1,5 @@
 import 'dart:typed_data';
-
-import 'package:bip32/bip32.dart';
+import '../lib/bip32.dart';
 import 'package:hex/hex.dart';
 import 'package:test/test.dart';
 import 'dart:io';

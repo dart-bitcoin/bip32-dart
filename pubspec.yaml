@@ -1,4 +1,4 @@
-name: bip32-dart
+name: bip32
 description: A BIP32 compatible library for Flutter writing by Dart.
 version: 1.0.0
 homepage: https://github.com/anicdh

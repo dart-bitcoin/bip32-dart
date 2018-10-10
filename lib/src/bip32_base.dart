@@ -1,5 +1,5 @@
 import 'dart:typed_data';
-import 'package:bip32/src/utils/crypto.dart';
+import 'utils/crypto.dart';
 import 'utils/ecurve.dart' as ecc;
 import 'package:bs58check/bs58check.dart' as bs58check;
 import 'utils/wif.dart' as wif;
