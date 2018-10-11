@@ -185,7 +185,7 @@ ECSignature deterministicGenerateK(Uint8List hash, Uint8List x) {
 int _compare(Uint8List a, Uint8List b) {
   BigInt aa = fromBuffer(a);
   BigInt bb = fromBuffer(b);
-  if (aa > bb) return 1;
   if (aa == bb) return 0;
-  if (aa < bb) return -1;
+  if (aa > bb) return 1;
+  return -1;
 }

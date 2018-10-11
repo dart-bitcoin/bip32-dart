@@ -4,8 +4,8 @@ import 'package:hex/hex.dart';
 import 'package:test/test.dart';
 import 'dart:io';
 import 'dart:convert';
-final LITECOIN = new NETWORK_TYPE(
-  bip32: new BIP32_TYPE(
+final LITECOIN = new NetworkType(
+  bip32: new Bip32Type(
     private: 0x019d9cfe,
     public: 0x019da462
   ),

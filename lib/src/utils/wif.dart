@@ -1,5 +1,5 @@
-import 'package:bs58check/bs58check.dart' as bs58check;
-import 'dart:typed_data';
+import "package:bs58check/bs58check.dart" as bs58check;
+import "dart:typed_data";
 class WIF {
   int version;
   Uint8List privateKey;

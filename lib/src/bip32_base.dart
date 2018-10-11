@@ -6,21 +6,21 @@ import 'utils/wif.dart' as wif;
 import 'dart:convert';
 
 // TODO: Put public facing types in this file.
-class BIP32_TYPE {
+class Bip32Type {
   int public;
   int private;
-  BIP32_TYPE({this.public, this.private});
+  Bip32Type({this.public, this.private});
 
 }
-class NETWORK_TYPE {
+class NetworkType {
   int wif;
-  BIP32_TYPE bip32;
-  NETWORK_TYPE({this.wif, this.bip32});
+  Bip32Type bip32;
+  NetworkType({this.wif, this.bip32});
 }
 
-final _BITCOIN = new NETWORK_TYPE(
+final _BITCOIN = new NetworkType(
   wif: 0x80,
-  bip32: new BIP32_TYPE(
+  bip32: new Bip32Type(
     public: 0x0488b21e,
     private: 0x0488ade4
   )
@@ -35,7 +35,7 @@ class BIP32 {
   Uint8List chainCode;
   int depth = 0;
   int index = 0;
-  NETWORK_TYPE network;
+  NetworkType network;
   int parentFingerprint = 0x00000000;
   BIP32(this._d, this._Q, this.chainCode, this.network);
   Uint8List get publicKey {
@@ -149,10 +149,10 @@ class BIP32 {
   }
 }
 
-BIP32 fromBase58(String string, [NETWORK_TYPE nw]) {
+BIP32 fromBase58(String string, [NetworkType nw]) {
   Uint8List buffer = bs58check.decode(string);
   if (buffer.length != 78) throw new ArgumentError("Invalid buffer length");
-  NETWORK_TYPE network = nw ?? _BITCOIN;
+  NetworkType network = nw ?? _BITCOIN;
   ByteData bytes = buffer.buffer.asByteData();
   // 4 bytes: version bytes
   var version = bytes.getUint32(0);
@@ -192,27 +192,27 @@ BIP32 fromBase58(String string, [NETWORK_TYPE nw]) {
   hd.parentFingerprint = parentFingerprint;
   return hd;
 }
-BIP32 fromPublicKey(Uint8List publicKey, Uint8List chainCode, [NETWORK_TYPE nw]) {
-  NETWORK_TYPE network = nw ?? _BITCOIN;
+BIP32 fromPublicKey(Uint8List publicKey, Uint8List chainCode, [NetworkType nw]) {
+  NetworkType network = nw ?? _BITCOIN;
   if (!ecc.isPoint(publicKey)) {
     throw new ArgumentError("Point is not on the curve");
   }
   return new BIP32(null, publicKey, chainCode, network);
 }
-BIP32 fromPrivateKey(Uint8List privateKey, Uint8List chainCode, [NETWORK_TYPE nw]) {
-  NETWORK_TYPE network = nw ?? _BITCOIN;
+BIP32 fromPrivateKey(Uint8List privateKey, Uint8List chainCode, [NetworkType nw]) {
+  NetworkType network = nw ?? _BITCOIN;
   if (privateKey.length != 32) throw new ArgumentError("Expected property privateKey of type Buffer(Length: 32), got Buffer(Length: 2)");
   if (!ecc.isPrivate(privateKey)) throw new ArgumentError("Private key not in range [1, n]");
   return new BIP32(privateKey, null, chainCode, network);
 }
-BIP32 fromSeed(Uint8List seed, [NETWORK_TYPE nw]) {
+BIP32 fromSeed(Uint8List seed, [NetworkType nw]) {
   if (seed.length < 16) {
     throw new ArgumentError("Seed should be at least 128 bits");
   }
   if (seed.length > 64) {
     throw new ArgumentError("Seed should be at most 512 bits");
   }
-  NETWORK_TYPE network = nw ?? _BITCOIN;
+  NetworkType network = nw ?? _BITCOIN;
   final I = hmacSHA512(utf8.encode("Bitcoin seed"), seed);
   final IL = I.sublist(0, 32);
   final IR = I.sublist(32);
