@@ -10,9 +10,7 @@ environment:
 dependencies:
   pointycastle: ^1.0.0-rc2
   hex: ^0.1.2
-  bs58check:
-    git:
-      url: git://github.com/anicdh/bs58check-dart.git
+  bs58check: ^1.0.0
 #  path: ^1.4.1
 
 dev_dependencies:
