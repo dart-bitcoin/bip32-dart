@@ -1,6 +1,6 @@
 name: bip32
 description: A BIP32 (https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki) compatible library for Flutter writing by Dart.
-version: 1.0.1
+version: 1.0.2
 homepage: https://github.com/anicdh
 author: anicdh <anic.dh@gmail.com>
 
@@ -10,8 +10,7 @@ environment:
 dependencies:
   pointycastle: ^1.0.0-rc2
   hex: ^0.1.2
-  bs58check: ^1.0.0
-#  path: ^1.4.1
+  bs58check: ^1.0.1
 
 dev_dependencies:
   test: ^1.0.0
