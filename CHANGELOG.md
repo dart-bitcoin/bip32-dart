@@ -9,3 +9,7 @@
 ## 1.0.2
 
 - Change version bs58check
+
+## 1.0.3
+
+- Change generate BIP32 from function to factory

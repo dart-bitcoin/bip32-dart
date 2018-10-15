@@ -11,7 +11,7 @@ import 'package:bip32/bip32.dart' as bip32;
 import 'package:hex/hex.dart';
 
 main() {
-  bip32.BIP32 node = bip32.fromBase58('xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi');
+  bip32.BIP32 node = bip32.BIP32.fromBase58('xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi');
 
   print(HEX.encode(node.privateKey));
   // => e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35
@@ -43,11 +43,11 @@ main() {
   print(childNeutered.toBase58());
   // => xpub6AvUGrnEpfvJ8L7GLRkBTByQ9uBvUHp9o5VxHrFxhvzV4dSWkySpNaBoLR9FpbnwRmTa69yLHF3QfcaxbWT7gWdwws5k4dpmJvqpEuMWwnj
 
-  bip32.BIP32 nodeFromSeed = bip32.fromSeed(HEX.decode("000102030405060708090a0b0c0d0e0f"));
+  bip32.BIP32 nodeFromSeed = bip32.BIP32.fromSeed(HEX.decode("000102030405060708090a0b0c0d0e0f"));
   print(nodeFromSeed.toBase58());
   // => xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi
 
-  bip32.BIP32 nodeFromPub = bip32.fromBase58("xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8");
+  bip32.BIP32 nodeFromPub = bip32.BIP32.fromBase58("xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8");
   print(nodeFromPub.toBase58());
   // => xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8
 
