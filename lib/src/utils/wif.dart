@@ -42,7 +42,7 @@ Uint8List encodeRaw(int version, Uint8List privateKey, bool compressed) {
   }
   return result;
 }
-WIF decode(String string, int version) {
+WIF decode(String string, [int version]) {
   return decodeRaw(bs58check.decode(string), version);
 }
 String encode(WIF wif) {

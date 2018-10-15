@@ -13,3 +13,8 @@
 ## 1.0.3
 
 - Change generate BIP32 from function to factory
+
+## 1.0.4
+
+- Fix error message when generate BIP32 from private key
+- Fix argument of wif decode function
