@@ -7,7 +7,7 @@ class WIF {
   WIF({this.version, this.privateKey, this.compressed});
 }
 WIF decodeRaw(Uint8List buffer, [int version]) {
-  if (version == null && buffer[0] != version) {
+  if (version != null && buffer[0] != version) {
     throw new ArgumentError("Invalid network version");
   }
   if (buffer.length == 33) {

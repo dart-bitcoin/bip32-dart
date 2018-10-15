@@ -18,3 +18,7 @@
 
 - Fix error message when generate BIP32 from private key
 - Fix argument of wif decode function
+
+## 1.0.5
+
+- Fix wif decodeRaw function
