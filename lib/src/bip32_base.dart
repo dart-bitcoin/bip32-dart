@@ -199,7 +199,7 @@ class BIP32 {
   }
   factory BIP32.fromPrivateKey(Uint8List privateKey, Uint8List chainCode, [NetworkType nw]) {
     NetworkType network = nw ?? _BITCOIN;
-    if (privateKey.length != 32) throw new ArgumentError("Expected property privateKey of type Buffer(Length: 32), got Buffer(Length: 2)");
+    if (privateKey.length != 32) throw new ArgumentError("Expected property privateKey of type Buffer(Length: 32)");
     if (!ecc.isPrivate(privateKey)) throw new ArgumentError("Private key not in range [1, n]");
     return new BIP32(privateKey, null, chainCode, network);
   }

@@ -138,7 +138,7 @@ void main() {
     try {
       hdFPrv1 = BIP32.fromPrivateKey(new Uint8List(2), ONE32);
     } catch (err) {
-      expect((err as ArgumentError).message, "Expected property privateKey of type Buffer(Length: 32), got Buffer(Length: 2)");
+      expect((err as ArgumentError).message, "Expected property privateKey of type Buffer(Length: 32)");
     } finally {
       expect(hdFPrv1, null);
     }
