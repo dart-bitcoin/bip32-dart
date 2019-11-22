@@ -105,6 +105,18 @@ Uint8List privateAdd (Uint8List d,Uint8List tweak) {
   BigInt dd = fromBuffer(d);
   BigInt tt = fromBuffer(tweak);
   Uint8List dt = toBuffer((dd + tt) % n);
+
+  if(dt.length < 32) {
+    Uint8List newDt = new Uint8List(32);
+    for(var i = 0; i < 32 - dt.length; i++) {
+      newDt[i] = 0x00;
+    }
+    for(var i = 0; i < dt.length; i++) {
+      newDt[32-dt.length + i] = dt[i];
+    }
+    dt = newDt;
+  }
+
   if (!isPrivate(dt)) return null;
   return dt;
 }
