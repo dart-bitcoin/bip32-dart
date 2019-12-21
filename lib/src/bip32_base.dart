@@ -38,16 +38,20 @@ class BIP32 {
   NetworkType network;
   int parentFingerprint = 0x00000000;
   BIP32(this._d, this._Q, this.chainCode, this.network);
+
   Uint8List get publicKey {
     if (_Q == null) _Q = ecc.pointFromScalar(_d, true);
     return _Q;
   }
+
   Uint8List get privateKey => _d;
   Uint8List get identifier => hash160(publicKey);
   Uint8List get fingerprint => identifier.sublist(0, 4);
+
   bool isNeutered() {
     return this._d == null;
   }
+
   BIP32 neutered() {
     final neutered = BIP32.fromPublicKey(this.publicKey, this.chainCode, this.network);
     neutered.depth = this.depth;
@@ -55,6 +59,7 @@ class BIP32 {
     neutered.parentFingerprint = this.parentFingerprint;
     return neutered;
   }
+
   String toBase58() {
     final version = (!isNeutered()) ? network.bip32.private : network.bip32.public;
     Uint8List buffer = new Uint8List(78);
@@ -72,6 +77,7 @@ class BIP32 {
     }
     return bs58check.encode(buffer);
   }
+
   String toWIF() {
     if (privateKey == null) {
       throw new ArgumentError("Missing private key");
@@ -82,6 +88,7 @@ class BIP32 {
         compressed: true
     ));
   }
+
   BIP32 derive(int index) {
     if (index > UINT32_MAX || index < 0) throw new ArgumentError("Expected UInt32");
     final isHardened = index >= HIGHEST_BIT;
@@ -118,10 +125,12 @@ class BIP32 {
     hd.parentFingerprint = fingerprint.buffer.asByteData().getUint32(0);
     return hd;
   }
+
   BIP32 deriveHardened(int index) {
     if (index > UINT31_MAX || index < 0) throw new ArgumentError("Expected UInt31");
     return this.derive(index + HIGHEST_BIT);
   }
+
   BIP32 derivePath(String path) {
     final regex = new RegExp(r"^(m\/)?(\d+'?\/)*\d+'?$");
     if (!regex.hasMatch(path)) throw new ArgumentError("Expected BIP32 Path");
@@ -141,12 +150,15 @@ class BIP32 {
       }
     });
   }
+
   sign(Uint8List hash) {
     return ecc.sign(hash, privateKey);
   }
+
   verify(Uint8List hash, Uint8List signature) {
     return ecc.verify(hash, publicKey, signature);
   }
+
   factory BIP32.fromBase58(String string, [NetworkType nw]) {
     Uint8List buffer = bs58check.decode(string);
     if (buffer.length != 78) throw new ArgumentError("Invalid buffer length");
@@ -190,6 +202,7 @@ class BIP32 {
     hd.parentFingerprint = parentFingerprint;
     return hd;
   }
+
   factory BIP32.fromPublicKey(Uint8List publicKey, Uint8List chainCode, [NetworkType nw]) {
     NetworkType network = nw ?? _BITCOIN;
     if (!ecc.isPoint(publicKey)) {
@@ -197,12 +210,14 @@ class BIP32 {
     }
     return new BIP32(null, publicKey, chainCode, network);
   }
+
   factory BIP32.fromPrivateKey(Uint8List privateKey, Uint8List chainCode, [NetworkType nw]) {
     NetworkType network = nw ?? _BITCOIN;
     if (privateKey.length != 32) throw new ArgumentError("Expected property privateKey of type Buffer(Length: 32)");
     if (!ecc.isPrivate(privateKey)) throw new ArgumentError("Private key not in range [1, n]");
     return new BIP32(privateKey, null, chainCode, network);
   }
+
   factory BIP32.fromSeed(Uint8List seed, [NetworkType nw]) {
     if (seed.length < 16) {
       throw new ArgumentError("Seed should be at least 128 bits");
@@ -217,5 +232,3 @@ class BIP32 {
     return BIP32.fromPrivateKey(IL, IR, network);
   }
 }
-
-

@@ -4,6 +4,7 @@ import 'package:hex/hex.dart';
 import 'package:test/test.dart';
 import 'dart:io';
 import 'dart:convert';
+
 final LITECOIN = new NetworkType(
   bip32: new Bip32Type(
     private: 0x019d9cfe,
@@ -51,6 +52,7 @@ void main() {
       });
     });
   });
+
   test('fromBase58 throws', () {
     (fixtures['invalid']['fromBase58'] as List<dynamic>).forEach((f) {
       var network;
@@ -65,6 +67,7 @@ void main() {
       }
     });
   });
+
   test('works for Private -> public (neutered)', () {
     final f = fixtures['valid'][1];
     final c = f['master']['children'][0];
@@ -72,6 +75,7 @@ void main() {
     final child = master.derive(c['m']).neutered();
     expect(child.toBase58(), c['base58']);
   });
+
   test('works for Private -> public (neutered, hardened)', () {
     final f = fixtures['valid'][0];
     final c = f['master']['children'][0];
@@ -79,6 +83,7 @@ void main() {
     final child = master.deriveHardened(c['m']).neutered();
     expect(child.toBase58(), c['base58']);
   });
+
   test('works for Public -> public', () {
     final f = fixtures['valid'][1];
     final c = f['master']['children'][0];
@@ -86,6 +91,7 @@ void main() {
     final child = master.derive(c['m']);
     expect(child.toBase58(), c['base58']);
   });
+
   test('throws on Public -> public (hardened)', () {
     final f = fixtures['valid'][0];
     final c = f['master']['children'][0];
@@ -99,6 +105,7 @@ void main() {
       expect(hd, null);
     }
   });
+
   test('throws on wrong types', () {
     final f = fixtures['valid'][0];
     final master = BIP32.fromBase58(f['master']['base58'] as String);
@@ -150,6 +157,7 @@ void main() {
       expect(hdFPrv2, null);
     }
   });
+
   test("works when private key has leading zeros", () {
     const key = "xprv9s21ZrQH143K3ckY9DgU79uMTJkQRLdbCCVDh81SnxTgPzLLGax6uHeBULTtaEtcAvKjXfT7ZWtHzKjTpujMkUd9dDb8msDeAfnJxrgAYhr";
     BIP32 hdkey = BIP32.fromBase58(key);
@@ -157,6 +165,13 @@ void main() {
     BIP32 child = hdkey.derivePath("m/44'/0'/0'/0/0'");
     expect(HEX.encode(child.privateKey), "3348069561d2a0fb925e74bf198762acc47dce7db27372257d2d959a9e6f8aeb");
   });
+
+  test('derive', () {
+    final hd = BIP32.fromBase58('xprv9s21ZrQH143K3Jpuz63XbuGs9CH9xG4sniVBBRVm6AJR57D9arxWz6FkXF3JSxSK7jUmVA11AdWa6ZsUtwGztE4QT5i8Y457RRPvMCc39rY');
+    final d = hd.derivePath("m/1'/199007533'/627785449'/1521366139'/1'");
+    expect(d.toBase58(), 'xprvA39a1i4ieYqGUQ7G1KGnaGzGwm7v3emjms3QN4jZ3HPeubXjshA3XjD5XFaiNgWFvoyC2NV5jN4eFcsVhkrWkvwR4qjdPbue3kpt6Ur3JRf');
+  });
+
   test("fromSeed", () {
     (fixtures['invalid']['fromSeed'] as List<dynamic>).forEach((f) {
       var hd;
@@ -169,6 +184,7 @@ void main() {
       }
     });
   });
+
   test("ecdsa", () {
     Uint8List seed = Uint8List.fromList(List.generate(32, (index) => 1));
     Uint8List hash = Uint8List.fromList(List.generate(32, (index) => 2));
@@ -180,6 +196,7 @@ void main() {
     expect(node.verify(seed, signature), false);
   });
 }
+
 void verify(BIP32 hd, prv, f, network) {
   expect(HEX.encode(hd.chainCode), f['chainCode']);
   expect(hd.depth, f['depth'] == null ? 0 : f['depth']);
