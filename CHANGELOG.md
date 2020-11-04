@@ -22,3 +22,7 @@
 ## 1.0.5
 
 - Fix wif decodeRaw function
+
+## 1.0.6
+
+- Fix derive bug
