@@ -1,17 +1,12 @@
 import 'dart:typed_data';
-import '../lib/bip32.dart';
 import 'package:hex/hex.dart';
 import 'package:test/test.dart';
 import 'dart:io';
 import 'dart:convert';
 
-final LITECOIN = new NetworkType(
-  bip32: new Bip32Type(
-    private: 0x019d9cfe,
-    public: 0x019da462
-  ),
-  wif: 0xb0
-);
+import '../lib/bip32.dart';
+
+final LITECOIN = new NetworkType(bip32: new Bip32Type(private: 0x019d9cfe, public: 0x019da462), wif: 0xb0);
 List<dynamic> validAll = [];
 
 void main() {
@@ -30,7 +25,7 @@ void main() {
         setUp(() {});
         var network;
         if (ff['network'] == 'litecoin') {
-         network = LITECOIN;
+          network = LITECOIN;
         }
         var hdPrv = BIP32.fromBase58(ff['base58Priv'], network);
         test('works for private key -> HD wallet', () {
@@ -60,7 +55,7 @@ void main() {
       BIP32 hd;
       try {
         hd = BIP32.fromBase58(f['string'], network);
-      } catch(err) {
+      } catch (err) {
         expect((err as ArgumentError).message, f['exception']);
       } finally {
         expect(hd, null);
@@ -99,7 +94,7 @@ void main() {
     BIP32 hd;
     try {
       hd = master.deriveHardened(c['m']);
-    } catch(err) {
+    } catch (err) {
       expect((err as ArgumentError).message, "Missing private key for hardened child key");
     } finally {
       expect(hd, null);
@@ -215,9 +210,7 @@ void verify(BIP32 hd, prv, f, network) {
   expect(hd.isNeutered(), !prv);
 
   if (f['children'] == null) return;
-  if (!prv &&
-      (f['children'] as List<dynamic>).map((fc) => fc['hardened']).contains(
-          true)) return;
+  if (!prv && (f['children'] as List<dynamic>).map((fc) => fc['hardened']).contains(true)) return;
 
   (f['children'] as List<dynamic>).forEach((cf) {
     var chd = hd.derivePath(cf['path']);
@@ -234,11 +227,9 @@ void verify(BIP32 hd, prv, f, network) {
       shd = shd.deriveHardened(cf['m']);
     } else {
       // verify any publicly derived children
-      if (cf['base58'] != null) verify(
-          shd.neutered().derive(cf['m']), false, cf, network);
+      if (cf['base58'] != null) verify(shd.neutered().derive(cf['m']), false, cf, network);
       shd = shd.derive(cf['m']);
       verify(shd, prv, cf, network);
     }
   });
 }
-

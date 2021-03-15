@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'utils/crypto.dart';
 import 'utils/ecurve.dart' as ecc;
-import 'package:bs58check/bs58check.dart' as bs58check;
+import 'package:bs58check_dart/bs58check.dart' as bs58check;
 import 'utils/wif.dart' as wif;
 import 'dart:convert';
 
@@ -10,24 +10,19 @@ class Bip32Type {
   int public;
   int private;
   Bip32Type({this.public, this.private});
-
 }
+
 class NetworkType {
   int wif;
   Bip32Type bip32;
   NetworkType({this.wif, this.bip32});
 }
 
-final _BITCOIN = new NetworkType(
-  wif: 0x80,
-  bip32: new Bip32Type(
-    public: 0x0488b21e,
-    private: 0x0488ade4
-  )
-);
+final _BITCOIN = new NetworkType(wif: 0x80, bip32: new Bip32Type(public: 0x0488b21e, private: 0x0488ade4));
 const HIGHEST_BIT = 0x80000000;
 const UINT31_MAX = 2147483647; // 2^31 - 1
 const UINT32_MAX = 4294967295; // 2^32 - 1
+
 /// Checks if you are awesome. Spoiler: you are.
 class BIP32 {
   Uint8List _d;
@@ -82,11 +77,7 @@ class BIP32 {
     if (privateKey == null) {
       throw new ArgumentError("Missing private key");
     }
-    return wif.encode(new wif.WIF(
-        version: network.wif,
-        privateKey:  privateKey,
-        compressed: true
-    ));
+    return wif.encode(new wif.WIF(version: network.wif, privateKey: privateKey, compressed: true));
   }
 
   BIP32 derive(int index) {
@@ -139,7 +130,7 @@ class BIP32 {
       if (parentFingerprint != 0) throw new ArgumentError("Expected master, got child");
       splitPath = splitPath.sublist(1);
     }
-    return splitPath.fold(this, (BIP32 prevHd,String indexStr) {
+    return splitPath.fold(this, (BIP32 prevHd, String indexStr) {
       int index;
       if (indexStr.substring(indexStr.length - 1) == "'") {
         index = int.parse(indexStr.substring(0, indexStr.length - 1));
