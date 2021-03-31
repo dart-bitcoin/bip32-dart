@@ -34,3 +34,10 @@
 ## 2.0.0
 
 - Update packages
+
+## 2.0.0+1
+
+- Fix
+
+## 2.1.0
+- fix bigIntDecode

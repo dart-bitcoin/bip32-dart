@@ -1,4 +1,6 @@
 import 'dart:typed_data';
+import 'package:hex/hex.dart';
+
 import 'utils/crypto.dart';
 import 'utils/ecurve.dart' as ecc;
 import 'package:bs58check_dart/bs58check.dart' as bs58check;
