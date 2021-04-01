@@ -4,9 +4,9 @@ class WIF {
   int version;
   Uint8List privateKey;
   bool compressed;
-  WIF({this.version, this.privateKey, this.compressed});
+  WIF({required this.version, required this.privateKey, required this.compressed});
 }
-WIF decodeRaw(Uint8List buffer, [int version]) {
+WIF decodeRaw(Uint8List buffer, [int? version]) {
   if (version != null && buffer[0] != version) {
     throw new ArgumentError("Invalid network version");
   }
@@ -42,7 +42,7 @@ Uint8List encodeRaw(int version, Uint8List privateKey, bool compressed) {
   }
   return result;
 }
-WIF decode(String string, [int version]) {
+WIF decode(String string, [int? version]) {
   return decodeRaw(bs58check.decode(string), version);
 }
 String encode(WIF wif) {

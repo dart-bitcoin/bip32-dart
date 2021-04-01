@@ -32,18 +32,19 @@ void main() {
         if (ff['network'] == 'litecoin') {
          network = LITECOIN;
         }
-        var hdPrv = BIP32.fromBase58(ff['base58Priv'], network);
+        print(ff['base58Priv']);
+        BIP32 hdPrv = BIP32.fromBase58(ff['base58Priv'], network);
         test('works for private key -> HD wallet', () {
           verify(hdPrv, true, ff, network);
         });
 
-        var hdPub = BIP32.fromBase58(ff['base58'], network);
+        BIP32 hdPub = BIP32.fromBase58(ff['base58'], network);
         test('works for public key -> HD wallet', () {
           verify(hdPub, false, ff, network);
         });
 
         if (ff['seed'] != null) {
-          var seed = HEX.decode(ff['seed']);
+          Uint8List seed = Uint8List.fromList(HEX.decode(ff['seed']));
           var hdSeed = BIP32.fromSeed(seed, network);
           test('works for seed -> HD wallet', () {
             verify(hdSeed, true, ff, network);
@@ -57,7 +58,7 @@ void main() {
     (fixtures['invalid']['fromBase58'] as List<dynamic>).forEach((f) {
       var network;
       if (f['network'] != null && f['network'] == 'litecoin') network = LITECOIN;
-      BIP32 hd;
+      BIP32? hd;
       try {
         hd = BIP32.fromBase58(f['string'], network);
       } catch(err) {
@@ -96,7 +97,7 @@ void main() {
     final f = fixtures['valid'][0];
     final c = f['master']['children'][0];
     final master = BIP32.fromBase58(f['master']['base58'] as String);
-    BIP32 hd;
+    BIP32? hd;
     try {
       hd = master.deriveHardened(c['m']);
     } catch(err) {
@@ -139,7 +140,7 @@ void main() {
         expect(hd, null);
       }
     });
-    var hdFPrv1, hdFPrv2;
+    BIP32? hdFPrv1, hdFPrv2;
     final ZERO32 = Uint8List.fromList(List.generate(32, (index) => 0));
     final ONE32 = Uint8List.fromList(List.generate(32, (index) => 1));
     try {
@@ -161,9 +162,9 @@ void main() {
   test("works when private key has leading zeros", () {
     const key = "xprv9s21ZrQH143K3ckY9DgU79uMTJkQRLdbCCVDh81SnxTgPzLLGax6uHeBULTtaEtcAvKjXfT7ZWtHzKjTpujMkUd9dDb8msDeAfnJxrgAYhr";
     BIP32 hdkey = BIP32.fromBase58(key);
-    expect(HEX.encode(hdkey.privateKey), "00000055378cf5fafb56c711c674143f9b0ee82ab0ba2924f19b64f5ae7cdbfd");
+    expect(HEX.encode(hdkey.privateKey!), "00000055378cf5fafb56c711c674143f9b0ee82ab0ba2924f19b64f5ae7cdbfd");
     BIP32 child = hdkey.derivePath("m/44'/0'/0'/0/0'");
-    expect(HEX.encode(child.privateKey), "3348069561d2a0fb925e74bf198762acc47dce7db27372257d2d959a9e6f8aeb");
+    expect(HEX.encode(child.privateKey!), "3348069561d2a0fb925e74bf198762acc47dce7db27372257d2d959a9e6f8aeb");
   });
 
   test('derive', () {
@@ -176,7 +177,7 @@ void main() {
     (fixtures['invalid']['fromSeed'] as List<dynamic>).forEach((f) {
       var hd;
       try {
-        hd = BIP32.fromSeed(HEX.decode(f['seed']));
+        hd = BIP32.fromSeed(Uint8List.fromList(HEX.decode(f['seed'])));
       } catch (err) {
         expect((err as ArgumentError).message, f['exception']);
       } finally {
@@ -189,7 +190,7 @@ void main() {
     Uint8List seed = Uint8List.fromList(List.generate(32, (index) => 1));
     Uint8List hash = Uint8List.fromList(List.generate(32, (index) => 2));
     String sigStr = "9636ee2fac31b795a308856b821ebe297dda7b28220fb46ea1fbbd7285977cc04c82b734956246a0f15a9698f03f546d8d96fe006c8e7bd2256ca7c8229e6f5c";
-    Uint8List signature = HEX.decode(sigStr);
+    Uint8List signature = Uint8List.fromList(HEX.decode(sigStr));
     BIP32 node = BIP32.fromSeed(seed);
     expect(HEX.encode(node.sign(hash)), sigStr);
     expect(node.verify(hash, signature), true);
@@ -202,11 +203,11 @@ void verify(BIP32 hd, prv, f, network) {
   expect(hd.depth, f['depth'] == null ? 0 : f['depth']);
   expect(hd.index, f['index'] == null ? 0 : f['index']);
   expect(HEX.encode(hd.fingerprint), f['fingerprint']);
-  expect(HEX.encode(hd.identifier), f['identifier']);
-  expect(HEX.encode(hd.publicKey), f['pubKey']);
+  expect(HEX.encode(hd.identifier!), f['identifier']);
+  expect(HEX.encode(hd.publicKey!), f['pubKey']);
   if (prv) {
     expect(hd.toBase58(), f['base58Priv']);
-    expect(HEX.encode(hd.privateKey), f['privKey']);
+    expect(HEX.encode(hd.privateKey!), f['privKey']);
     expect(hd.toWIF(), f['wif']);
   } else {
     expect(hd.privateKey, null);

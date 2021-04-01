@@ -1,16 +1,20 @@
 import 'dart:typed_data';
 import 'package:hex/hex.dart';
 import "package:pointycastle/ecc/curves/secp256k1.dart";
-import "package:pointycastle/api.dart" show PrivateKeyParameter, PublicKeyParameter;
-import 'package:pointycastle/ecc/api.dart' show ECPrivateKey, ECPublicKey, ECSignature, ECPoint;
+import "package:pointycastle/api.dart"
+    show PrivateKeyParameter, PublicKeyParameter;
+import 'package:pointycastle/ecc/api.dart'
+    show ECPrivateKey, ECPublicKey, ECSignature, ECPoint;
 import "package:pointycastle/signers/ecdsa_signer.dart";
 import 'package:pointycastle/macs/hmac.dart';
 import "package:pointycastle/digests/sha256.dart";
 import 'package:pointycastle/src/utils.dart';
 
-final ZERO32 = Uint8List.fromList(List.generate(32, (index) => 0));
-final EC_GROUP_ORDER = HEX.decode("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
-final EC_P = HEX.decode("fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f");
+final Uint8List ZERO32 = Uint8List.fromList(List.generate(32, (index) => 0));
+final Uint8List EC_GROUP_ORDER = Uint8List.fromList(HEX.decode(
+    "fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141"));
+final Uint8List EC_P = Uint8List.fromList(HEX.decode(
+    "fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f"));
 final secp256k1 = new ECCurve_secp256k1();
 final n = secp256k1.n;
 final G = secp256k1.G;
@@ -21,7 +25,7 @@ const THROW_BAD_TWEAK = 'Expected Tweak';
 const THROW_BAD_HASH = 'Expected Hash';
 const THROW_BAD_SIGNATURE = 'Expected Signature';
 
-bool isPrivate (Uint8List x) {
+bool isPrivate(Uint8List x) {
   if (!isScalar(x)) return false;
   return _compare(x, ZERO32) > 0 && // > 0
       _compare(x, EC_GROUP_ORDER) < 0; // < G
@@ -42,7 +46,7 @@ bool isPoint(Uint8List p) {
   }
   try {
     decodeFrom(p);
-  } catch(err) {
+  } catch (err) {
     return false;
   }
   if ((t == 0x02 || t == 0x03) && p.length == 33) {
@@ -61,55 +65,51 @@ bool isPoint(Uint8List p) {
   return false;
 }
 
-bool isScalar (Uint8List x) {
+bool isScalar(Uint8List x) {
   return x.length == 32;
 }
 
-bool isOrderScalar (x) {
+bool isOrderScalar(x) {
   if (!isScalar(x)) return false;
   return _compare(x, EC_GROUP_ORDER) < 0; // < G
 }
 
-bool isSignature (Uint8List value) {
+bool isSignature(Uint8List value) {
   Uint8List r = value.sublist(0, 32);
   Uint8List s = value.sublist(32, 64);
   return value.length == 64 &&
-  _compare(r, EC_GROUP_ORDER) < 0 &&
-  _compare(s, EC_GROUP_ORDER) < 0;
+      _compare(r, EC_GROUP_ORDER) < 0 &&
+      _compare(s, EC_GROUP_ORDER) < 0;
 }
 
-bool _isPointCompressed (Uint8List p) {
-  return p[0] != 0x04;
+bool _isPointCompressed(Uint8List p) {
+  return p.length > 0 && p[0] != 0x04;
 }
 
-bool assumeCompression(bool value, Uint8List pubkey) {
-  if (value == null && pubkey != null) return _isPointCompressed(pubkey);
-  if (value == null) return true;
-  return value;
-}
+bool assumeCompression(bool value, Uint8List pubkey) => _isPointCompressed(pubkey);
 
-Uint8List pointFromScalar(Uint8List d, bool _compressed) {
+Uint8List? pointFromScalar(Uint8List d, bool _compressed) {
   if (!isPrivate(d)) throw new ArgumentError(THROW_BAD_PRIVATE);
   BigInt dd = fromBuffer(d);
-  ECPoint pp = G * dd;
+  ECPoint pp = (G * dd)!;
   if (pp.isInfinity) return null;
   return getEncoded(pp, _compressed);
 }
 
-Uint8List pointAddScalar(Uint8List p,Uint8List tweak, bool _compressed) {
+Uint8List? pointAddScalar(Uint8List p, Uint8List tweak, bool _compressed) {
   if (!isPoint(p)) throw new ArgumentError(THROW_BAD_POINT);
   if (!isOrderScalar(tweak)) throw new ArgumentError(THROW_BAD_TWEAK);
   bool compressed = assumeCompression(_compressed, p);
-  ECPoint pp = decodeFrom(p);
+  ECPoint pp = decodeFrom(p)!;
   if (_compare(tweak, ZERO32) == 0) return getEncoded(pp, compressed);
   BigInt tt = fromBuffer(tweak);
-  ECPoint qq = G * tt;
-  ECPoint uu = pp + qq;
+  ECPoint qq = (G * tt)!;
+  ECPoint uu = (pp + qq)!;
   if (uu.isInfinity) return null;
   return getEncoded(uu, compressed);
 }
 
-Uint8List privateAdd (Uint8List d,Uint8List tweak) {
+Uint8List? privateAdd(Uint8List d, Uint8List tweak) {
   if (!isPrivate(d)) throw new ArgumentError(THROW_BAD_PRIVATE);
   if (!isOrderScalar(tweak)) throw new ArgumentError(THROW_BAD_TWEAK);
   BigInt dd = fromBuffer(d);
@@ -147,7 +147,7 @@ bool verify(Uint8List hash, Uint8List q, Uint8List signature) {
   // 1.4.1 Enforce r and s are both integers in the interval [1, n − 1] (1, isSignature enforces '< n - 1')
   if (!isSignature(signature)) throw new ArgumentError(THROW_BAD_SIGNATURE);
 
-  ECPoint Q = decodeFrom(q);
+  ECPoint Q = decodeFrom(q)!;
   BigInt r = fromBuffer(signature.sublist(0, 32));
   BigInt s = fromBuffer(signature.sublist(32, 64));
 
@@ -185,17 +185,30 @@ bool verify(Uint8List hash, Uint8List q, Uint8List signature) {
   */
 }
 
-BigInt fromBuffer(Uint8List d) { return decodeBigInt(d); }
-Uint8List toBuffer(BigInt d) { return encodeBigInt(d); }
-ECPoint decodeFrom(Uint8List P) { return secp256k1.curve.decodePoint(P); }
-Uint8List getEncoded(ECPoint P, compressed) { return P.getEncoded(compressed); }
+BigInt fromBuffer(Uint8List d) {
+  return decodeBigInt(d);
+}
+
+Uint8List toBuffer(BigInt d) {
+  return encodeBigInt(d);
+}
+
+ECPoint? decodeFrom(Uint8List P) {
+  return secp256k1.curve.decodePoint(P);
+}
+
+Uint8List getEncoded(ECPoint P, compressed) {
+  return P.getEncoded(compressed);
+}
 
 ECSignature deterministicGenerateK(Uint8List hash, Uint8List x) {
   final signer = new ECDSASigner(null, new HMac(new SHA256Digest(), 64));
-  var pkp = new PrivateKeyParameter(new ECPrivateKey(decodeBigInt(x), secp256k1));
+  var pkp =
+      new PrivateKeyParameter(new ECPrivateKey(decodeBigInt(x), secp256k1));
   signer.init(true, pkp);
 //  signer.init(false, new PublicKeyParameter(new ECPublicKey(secp256k1.curve.decodePoint(x), secp256k1)));
-  return signer.generateSignature(hash);
+  // return signer.generateSignature(hash);
+  return (signer.generateSignature(hash) as ECSignature);
 }
 
 int _compare(Uint8List a, Uint8List b) {
