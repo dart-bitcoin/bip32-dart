@@ -30,3 +30,7 @@
 ## 1.0.8
 
 - Update pointycastle version to 2.0.0
+
+## 1.0.10
+
+- Fix sign
