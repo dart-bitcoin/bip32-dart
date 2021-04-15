@@ -234,6 +234,10 @@ Uint8List _encodeBigInt(BigInt number) {
   if (number > BigInt.zero) {
     rawSize = (number.bitLength + 7) >> 3;
     needsPaddingByte = ((number >> (rawSize - 1) * 8) & negativeFlag) == negativeFlag ? 1 : 0;
+
+    if (rawSize < 32) {
+      needsPaddingByte = 1;
+    }
   } else {
     needsPaddingByte = 0;
     rawSize = (number.bitLength + 8) >> 3;
