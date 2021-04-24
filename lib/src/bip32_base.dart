@@ -9,29 +9,25 @@ import 'dart:convert';
 class Bip32Type {
   int public;
   int private;
-  Bip32Type({this.public, this.private});
-
+  Bip32Type({required this.public, required this.private});
 }
+
 class NetworkType {
   int wif;
   Bip32Type bip32;
-  NetworkType({this.wif, this.bip32});
+  NetworkType({required this.wif, required this.bip32});
 }
 
 final _BITCOIN = new NetworkType(
-  wif: 0x80,
-  bip32: new Bip32Type(
-    public: 0x0488b21e,
-    private: 0x0488ade4
-  )
-);
+    wif: 0x80, bip32: new Bip32Type(public: 0x0488b21e, private: 0x0488ade4));
 const HIGHEST_BIT = 0x80000000;
 const UINT31_MAX = 2147483647; // 2^31 - 1
 const UINT32_MAX = 4294967295; // 2^32 - 1
+
 /// Checks if you are awesome. Spoiler: you are.
 class BIP32 {
-  Uint8List _d;
-  Uint8List _Q;
+  Uint8List? _d;
+  Uint8List? _Q;
   Uint8List chainCode;
   int depth = 0;
   int index = 0;
@@ -40,11 +36,11 @@ class BIP32 {
   BIP32(this._d, this._Q, this.chainCode, this.network);
 
   Uint8List get publicKey {
-    if (_Q == null) _Q = ecc.pointFromScalar(_d, true);
-    return _Q;
+    if (_Q == null) _Q = ecc.pointFromScalar(_d!, true)!;
+    return _Q!;
   }
 
-  Uint8List get privateKey => _d;
+  Uint8List? get privateKey => _d;
   Uint8List get identifier => hash160(publicKey);
   Uint8List get fingerprint => identifier.sublist(0, 4);
 
@@ -53,7 +49,8 @@ class BIP32 {
   }
 
   BIP32 neutered() {
-    final neutered = BIP32.fromPublicKey(this.publicKey, this.chainCode, this.network);
+    final neutered =
+        BIP32.fromPublicKey(this.publicKey, this.chainCode, this.network);
     neutered.depth = this.depth;
     neutered.index = this.index;
     neutered.parentFingerprint = this.parentFingerprint;
@@ -61,7 +58,8 @@ class BIP32 {
   }
 
   String toBase58() {
-    final version = (!isNeutered()) ? network.bip32.private : network.bip32.public;
+    final version =
+        (!isNeutered()) ? network.bip32.private : network.bip32.public;
     Uint8List buffer = new Uint8List(78);
     ByteData bytes = buffer.buffer.asByteData();
     bytes.setUint32(0, version);
@@ -71,7 +69,7 @@ class BIP32 {
     buffer.setRange(13, 45, chainCode);
     if (!isNeutered()) {
       bytes.setUint8(45, 0);
-      buffer.setRange(46, 78, privateKey);
+      buffer.setRange(46, 78, privateKey!);
     } else {
       buffer.setRange(45, 78, publicKey);
     }
@@ -83,14 +81,12 @@ class BIP32 {
       throw new ArgumentError("Missing private key");
     }
     return wif.encode(new wif.WIF(
-        version: network.wif,
-        privateKey:  privateKey,
-        compressed: true
-    ));
+        version: network.wif, privateKey: privateKey!, compressed: true));
   }
 
   BIP32 derive(int index) {
-    if (index > UINT32_MAX || index < 0) throw new ArgumentError("Expected UInt32");
+    if (index > UINT32_MAX || index < 0)
+      throw new ArgumentError("Expected UInt32");
     final isHardened = index >= HIGHEST_BIT;
     Uint8List data = new Uint8List(37);
     if (isHardened) {
@@ -98,7 +94,7 @@ class BIP32 {
         throw new ArgumentError("Missing private key for hardened child key");
       }
       data[0] = 0x00;
-      data.setRange(1, 33, privateKey);
+      data.setRange(1, 33, privateKey!);
       data.buffer.asByteData().setUint32(33, index);
     } else {
       data.setRange(0, 33, publicKey);
@@ -112,7 +108,7 @@ class BIP32 {
     }
     BIP32 hd;
     if (!isNeutered()) {
-      final ki = ecc.privateAdd(privateKey, IL);
+      final ki = ecc.privateAdd(privateKey!, IL);
       if (ki == null) return derive(index + 1);
       hd = BIP32.fromPrivateKey(ki, IR, network);
     } else {
@@ -127,7 +123,8 @@ class BIP32 {
   }
 
   BIP32 deriveHardened(int index) {
-    if (index > UINT31_MAX || index < 0) throw new ArgumentError("Expected UInt31");
+    if (index > UINT31_MAX || index < 0)
+      throw new ArgumentError("Expected UInt31");
     return this.derive(index + HIGHEST_BIT);
   }
 
@@ -136,10 +133,11 @@ class BIP32 {
     if (!regex.hasMatch(path)) throw new ArgumentError("Expected BIP32 Path");
     List<String> splitPath = path.split("/");
     if (splitPath[0] == "m") {
-      if (parentFingerprint != 0) throw new ArgumentError("Expected master, got child");
+      if (parentFingerprint != 0)
+        throw new ArgumentError("Expected master, got child");
       splitPath = splitPath.sublist(1);
     }
-    return splitPath.fold(this, (BIP32 prevHd,String indexStr) {
+    return splitPath.fold(this, (BIP32 prevHd, String indexStr) {
       int index;
       if (indexStr.substring(indexStr.length - 1) == "'") {
         index = int.parse(indexStr.substring(0, indexStr.length - 1));
@@ -152,14 +150,14 @@ class BIP32 {
   }
 
   sign(Uint8List hash) {
-    return ecc.sign(hash, privateKey);
+    return ecc.sign(hash, privateKey!);
   }
 
   verify(Uint8List hash, Uint8List signature) {
     return ecc.verify(hash, publicKey, signature);
   }
 
-  factory BIP32.fromBase58(String string, [NetworkType nw]) {
+  factory BIP32.fromBase58(String string, [NetworkType? nw]) {
     Uint8List buffer = bs58check.decode(string);
     if (buffer.length != 78) throw new ArgumentError("Invalid buffer length");
     NetworkType network = nw ?? _BITCOIN;
@@ -175,7 +173,8 @@ class BIP32 {
     // 4 bytes: the fingerprint of the parent's key (0x00000000 if master key)
     var parentFingerprint = bytes.getUint32(5);
     if (depth == 0) {
-      if (parentFingerprint != 0x00000000) throw new ArgumentError("Invalid parent fingerprint");
+      if (parentFingerprint != 0x00000000)
+        throw new ArgumentError("Invalid parent fingerprint");
     }
 
     // 4 bytes: child number. This is the number i in xi = xpar/i, with xi the key being serialized.
@@ -189,7 +188,8 @@ class BIP32 {
 
     // 33 bytes: private key data (0x00 + k)
     if (version == network.bip32.private) {
-      if (bytes.getUint8(45) != 0x00) throw new ArgumentError("Invalid private key");
+      if (bytes.getUint8(45) != 0x00)
+        throw new ArgumentError("Invalid private key");
       Uint8List k = buffer.sublist(46, 78);
       hd = BIP32.fromPrivateKey(k, chainCode, network);
     } else {
@@ -203,7 +203,8 @@ class BIP32 {
     return hd;
   }
 
-  factory BIP32.fromPublicKey(Uint8List publicKey, Uint8List chainCode, [NetworkType nw]) {
+  factory BIP32.fromPublicKey(Uint8List publicKey, Uint8List chainCode,
+      [NetworkType? nw]) {
     NetworkType network = nw ?? _BITCOIN;
     if (!ecc.isPoint(publicKey)) {
       throw new ArgumentError("Point is not on the curve");
@@ -211,14 +212,18 @@ class BIP32 {
     return new BIP32(null, publicKey, chainCode, network);
   }
 
-  factory BIP32.fromPrivateKey(Uint8List privateKey, Uint8List chainCode, [NetworkType nw]) {
+  factory BIP32.fromPrivateKey(Uint8List privateKey, Uint8List chainCode,
+      [NetworkType? nw]) {
     NetworkType network = nw ?? _BITCOIN;
-    if (privateKey.length != 32) throw new ArgumentError("Expected property privateKey of type Buffer(Length: 32)");
-    if (!ecc.isPrivate(privateKey)) throw new ArgumentError("Private key not in range [1, n]");
+    if (privateKey.length != 32)
+      throw new ArgumentError(
+          "Expected property privateKey of type Buffer(Length: 32)");
+    if (!ecc.isPrivate(privateKey))
+      throw new ArgumentError("Private key not in range [1, n]");
     return new BIP32(privateKey, null, chainCode, network);
   }
 
-  factory BIP32.fromSeed(Uint8List seed, [NetworkType nw]) {
+  factory BIP32.fromSeed(Uint8List seed, [NetworkType? nw]) {
     if (seed.length < 16) {
       throw new ArgumentError("Seed should be at least 128 bits");
     }
@@ -226,7 +231,7 @@ class BIP32 {
       throw new ArgumentError("Seed should be at most 512 bits");
     }
     NetworkType network = nw ?? _BITCOIN;
-    final I = hmacSHA512(utf8.encode("Bitcoin seed"), seed);
+    final I = hmacSHA512(utf8.encode("Bitcoin seed") as Uint8List, seed);
     final IL = I.sublist(0, 32);
     final IR = I.sublist(32);
     return BIP32.fromPrivateKey(IL, IR, network);
