@@ -73,6 +73,7 @@ bool isOrderScalar(x) {
 bool isSignature(Uint8List value) {
   Uint8List r = value.sublist(0, 32);
   Uint8List s = value.sublist(32, 64);
+
   return value.length == 64 && _compare(r, EC_GROUP_ORDER as Uint8List) < 0 && _compare(s, EC_GROUP_ORDER as Uint8List) < 0;
 }
 
@@ -183,6 +184,43 @@ bool verify(Uint8List hash, Uint8List q, Uint8List signature) {
   */
 }
 
+/// Decode a BigInt from bytes in big-endian encoding.
+BigInt _decodeBigInt(List<int> bytes) {
+  BigInt result = new BigInt.from(0);
+  for (int i = 0; i < bytes.length; i++) {
+    result += new BigInt.from(bytes[bytes.length - i - 1]) << (8 * i);
+  }
+  return result;
+}
+
+var _byteMask = new BigInt.from(0xff);
+
+/// Encode a BigInt into bytes using big-endian encoding.
+Uint8List _encodeBigInt(BigInt number) {
+  int needsPaddingByte;
+  int rawSize;
+
+  if (number > BigInt.zero) {
+    rawSize = (number.bitLength + 7) >> 3;
+    needsPaddingByte = ((number >> (rawSize - 1) * 8) & negativeFlag) == negativeFlag ? 1 : 0;
+
+    if (rawSize < 32) {
+      needsPaddingByte = 1;
+    }
+  } else {
+    needsPaddingByte = 0;
+    rawSize = (number.bitLength + 8) >> 3;
+  }
+
+  final size = rawSize < 32 ? rawSize + needsPaddingByte : rawSize;
+  var result = new Uint8List(size);
+  for (int i = 0; i < size; i++) {
+    result[size - i - 1] = (number & _byteMask).toInt();
+    number = number >> 8;
+  }
+  return result;
+}
+
 BigInt fromBuffer(Uint8List d) {
   return _decodeBigInt(d);
 }
@@ -192,7 +230,7 @@ Uint8List toBuffer(BigInt d) {
 }
 
 ECPoint decodeFrom(Uint8List P) {
-  return secp256k1.curve.decodePoint(P)!;
+  return secp256k1.curve.decodePoint(P);
 }
 
 Uint8List getEncoded(ECPoint P, compressed) {

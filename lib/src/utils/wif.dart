@@ -1,4 +1,4 @@
-import "package:bs58check/bs58check.dart" as bs58check;
+import "package:bs58check_dart/bs58check.dart" as bs58check;
 import "dart:typed_data";
 
 class WIF {
