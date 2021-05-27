@@ -1,7 +1,7 @@
-name: bip32_defichain
-description: A BIP32 (https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki) compatible library for Flutter writing by Dart. Fork (https://github.com/DeFiCh-WalletApp/bip32-dart)
-version: 2.2.0
-homepage: https://github.com/DeFiCh-WalletApp/bip32-dart
+name: bip32
+description: A BIP32 (https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki) compatible library for Flutter writing by Dart.
+version: 2.0.0
+homepage: https://github.com/dart-bitcoin/bip32-dart
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
