@@ -1,16 +1,15 @@
 import 'dart:typed_data';
+import 'package:bip32_defichain/bip32.dart';
 import 'package:hex/hex.dart';
 import 'package:test/test.dart';
 import 'dart:io';
 import 'dart:convert';
 
-final LITECOIN = new NetworkType(
-    bip32: new Bip32Type(private: 0x019d9cfe, public: 0x019da462), wif: 0xb0);
+final LITECOIN = new NetworkType(bip32: new Bip32Type(private: 0x019d9cfe, public: 0x019da462), wif: 0xb0);
 List<dynamic> validAll = [];
 
 void main() {
-  Map<String, dynamic> fixtures = json
-      .decode(File('./test/fixtures.json').readAsStringSync(encoding: utf8));
+  Map<String, dynamic> fixtures = json.decode(File('./test/fixtures.json').readAsStringSync(encoding: utf8));
   (fixtures['valid'] as List<dynamic>).forEach((f) {
     f['master']['network'] = f['network'];
     f['master']['children'] = f['children'];
@@ -51,8 +50,7 @@ void main() {
   test('fromBase58 throws', () {
     (fixtures['invalid']['fromBase58'] as List<dynamic>).forEach((f) {
       var network;
-      if (f['network'] != null && f['network'] == 'litecoin')
-        network = LITECOIN;
+      if (f['network'] != null && f['network'] == 'litecoin') network = LITECOIN;
       BIP32? hd;
       try {
         hd = BIP32.fromBase58(f['string'], network);
@@ -96,8 +94,7 @@ void main() {
     try {
       hd = master.deriveHardened(c['m']);
     } catch (err) {
-      expect((err as ArgumentError).message,
-          "Missing private key for hardened child key");
+      expect((err as ArgumentError).message, "Missing private key for hardened child key");
     } finally {
       expect(hd, null);
     }
@@ -142,8 +139,7 @@ void main() {
     try {
       hdFPrv1 = BIP32.fromPrivateKey(new Uint8List(2), ONE32);
     } catch (err) {
-      expect((err as ArgumentError).message,
-          "Expected property privateKey of type Buffer(Length: 32)");
+      expect((err as ArgumentError).message, "Expected property privateKey of type Buffer(Length: 32)");
     } finally {
       expect(hdFPrv1, null);
     }
@@ -157,22 +153,17 @@ void main() {
   });
 
   test("works when private key has leading zeros", () {
-    const key =
-        "xprv9s21ZrQH143K3ckY9DgU79uMTJkQRLdbCCVDh81SnxTgPzLLGax6uHeBULTtaEtcAvKjXfT7ZWtHzKjTpujMkUd9dDb8msDeAfnJxrgAYhr";
+    const key = "xprv9s21ZrQH143K3ckY9DgU79uMTJkQRLdbCCVDh81SnxTgPzLLGax6uHeBULTtaEtcAvKjXfT7ZWtHzKjTpujMkUd9dDb8msDeAfnJxrgAYhr";
     BIP32 hdkey = BIP32.fromBase58(key);
-    expect(HEX.encode(hdkey.privateKey!),
-        "00000055378cf5fafb56c711c674143f9b0ee82ab0ba2924f19b64f5ae7cdbfd");
+    expect(HEX.encode(hdkey.privateKey!), "00000055378cf5fafb56c711c674143f9b0ee82ab0ba2924f19b64f5ae7cdbfd");
     BIP32 child = hdkey.derivePath("m/44'/0'/0'/0/0'");
-    expect(HEX.encode(child.privateKey!),
-        "3348069561d2a0fb925e74bf198762acc47dce7db27372257d2d959a9e6f8aeb");
+    expect(HEX.encode(child.privateKey!), "3348069561d2a0fb925e74bf198762acc47dce7db27372257d2d959a9e6f8aeb");
   });
 
   test('derive', () {
-    final hd = BIP32.fromBase58(
-        'xprv9s21ZrQH143K3Jpuz63XbuGs9CH9xG4sniVBBRVm6AJR57D9arxWz6FkXF3JSxSK7jUmVA11AdWa6ZsUtwGztE4QT5i8Y457RRPvMCc39rY');
+    final hd = BIP32.fromBase58('xprv9s21ZrQH143K3Jpuz63XbuGs9CH9xG4sniVBBRVm6AJR57D9arxWz6FkXF3JSxSK7jUmVA11AdWa6ZsUtwGztE4QT5i8Y457RRPvMCc39rY');
     final d = hd.derivePath("m/1'/199007533'/627785449'/1521366139'/1'");
-    expect(d.toBase58(),
-        'xprvA39a1i4ieYqGUQ7G1KGnaGzGwm7v3emjms3QN4jZ3HPeubXjshA3XjD5XFaiNgWFvoyC2NV5jN4eFcsVhkrWkvwR4qjdPbue3kpt6Ur3JRf');
+    expect(d.toBase58(), 'xprvA39a1i4ieYqGUQ7G1KGnaGzGwm7v3emjms3QN4jZ3HPeubXjshA3XjD5XFaiNgWFvoyC2NV5jN4eFcsVhkrWkvwR4qjdPbue3kpt6Ur3JRf');
   });
 
   test("fromSeed", () {
@@ -191,8 +182,7 @@ void main() {
   test("ecdsa", () {
     Uint8List seed = Uint8List.fromList(List.generate(32, (index) => 1));
     Uint8List hash = Uint8List.fromList(List.generate(32, (index) => 2));
-    String sigStr =
-        "9636ee2fac31b795a308856b821ebe297dda7b28220fb46ea1fbbd7285977cc04c82b734956246a0f15a9698f03f546d8d96fe006c8e7bd2256ca7c8229e6f5c";
+    String sigStr = "9636ee2fac31b795a308856b821ebe297dda7b28220fb46ea1fbbd7285977cc04c82b734956246a0f15a9698f03f546d8d96fe006c8e7bd2256ca7c8229e6f5c";
     Uint8List signature = HEX.decode(sigStr) as Uint8List;
     BIP32 node = BIP32.fromSeed(seed);
     expect(HEX.encode(node.sign(hash)), sigStr);
@@ -219,10 +209,7 @@ void verify(BIP32 hd, prv, f, network) {
   expect(hd.isNeutered(), !prv);
 
   if (f['children'] == null) return;
-  if (!prv &&
-      (f['children'] as List<dynamic>)
-          .map((fc) => fc['hardened'])
-          .contains(true)) return;
+  if (!prv && (f['children'] as List<dynamic>).map((fc) => fc['hardened']).contains(true)) return;
 
   (f['children'] as List<dynamic>).forEach((cf) {
     var chd = hd.derivePath(cf['path']);
@@ -239,8 +226,7 @@ void verify(BIP32 hd, prv, f, network) {
       shd = shd.deriveHardened(cf['m']);
     } else {
       // verify any publicly derived children
-      if (cf['base58'] != null)
-        verify(shd.neutered().derive(cf['m']), false, cf, network);
+      if (cf['base58'] != null) verify(shd.neutered().derive(cf['m']), false, cf, network);
       shd = shd.derive(cf['m']);
       verify(shd, prv, cf, network);
     }

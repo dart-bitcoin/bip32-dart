@@ -1,14 +1,11 @@
-import "package:bs58check_dart/bs58check.dart" as bs58check;
+import "package:bs58check/bs58check.dart" as bs58check;
 import "dart:typed_data";
 
 class WIF {
   int version;
   Uint8List privateKey;
   bool compressed;
-  WIF(
-      {required this.version,
-      required this.privateKey,
-      required this.compressed});
+  WIF({required this.version, required this.privateKey, required this.compressed});
 }
 
 WIF decodeRaw(Uint8List buffer, [int? version]) {
@@ -16,10 +13,7 @@ WIF decodeRaw(Uint8List buffer, [int? version]) {
     throw new ArgumentError("Invalid network version");
   }
   if (buffer.length == 33) {
-    return new WIF(
-        version: buffer[0],
-        privateKey: buffer.sublist(1, 33),
-        compressed: false);
+    return new WIF(version: buffer[0], privateKey: buffer.sublist(1, 33), compressed: false);
   }
   if (buffer.length != 34) {
     throw new ArgumentError("Invalid WIF length");
@@ -27,8 +21,7 @@ WIF decodeRaw(Uint8List buffer, [int? version]) {
   if (buffer[33] != 0x01) {
     throw new ArgumentError("Invalid compression flag");
   }
-  return new WIF(
-      version: buffer[0], privateKey: buffer.sublist(1, 33), compressed: true);
+  return new WIF(version: buffer[0], privateKey: buffer.sublist(1, 33), compressed: true);
 }
 
 Uint8List encodeRaw(int version, Uint8List privateKey, bool compressed) {
@@ -50,6 +43,5 @@ WIF decode(String string, [int? version]) {
 }
 
 String encode(WIF wif) {
-  return bs58check
-      .encode(encodeRaw(wif.version, wif.privateKey, wif.compressed));
+  return bs58check.encode(encodeRaw(wif.version, wif.privateKey, wif.compressed));
 }

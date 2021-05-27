@@ -99,11 +99,11 @@ Uint8List? pointAddScalar(Uint8List p, Uint8List tweak, bool _compressed) {
   if (!isPoint(p)) throw new ArgumentError(THROW_BAD_POINT);
   if (!isOrderScalar(tweak)) throw new ArgumentError(THROW_BAD_TWEAK);
   bool compressed = assumeCompression(_compressed, p);
-  ECPoint pp = decodeFrom(p);
+  ECPoint? pp = decodeFrom(p);
   if (_compare(tweak, ZERO32) == 0) return getEncoded(pp, compressed);
   BigInt tt = fromBuffer(tweak);
   ECPoint qq = (G * tt) as ECPoint;
-  ECPoint uu = (pp + qq) as ECPoint;
+  ECPoint uu = (pp! + qq) as ECPoint;
   if (uu.isInfinity) return null;
   return getEncoded(uu, compressed);
 }
@@ -146,7 +146,7 @@ bool verify(Uint8List hash, Uint8List q, Uint8List signature) {
   // 1.4.1 Enforce r and s are both integers in the interval [1, n − 1] (1, isSignature enforces '< n - 1')
   if (!isSignature(signature)) throw new ArgumentError(THROW_BAD_SIGNATURE);
 
-  ECPoint Q = decodeFrom(q);
+  ECPoint? Q = decodeFrom(q);
   BigInt r = fromBuffer(signature.sublist(0, 32));
   BigInt s = fromBuffer(signature.sublist(32, 64));
 
@@ -229,12 +229,12 @@ Uint8List toBuffer(BigInt d) {
   return _encodeBigInt(d);
 }
 
-ECPoint decodeFrom(Uint8List P) {
+ECPoint? decodeFrom(Uint8List P) {
   return secp256k1.curve.decodePoint(P);
 }
 
-Uint8List getEncoded(ECPoint P, compressed) {
-  return P.getEncoded(compressed);
+Uint8List getEncoded(ECPoint? P, compressed) {
+  return P!.getEncoded(compressed);
 }
 
 ECSignature deterministicGenerateK(Uint8List hash, Uint8List x) {
@@ -251,41 +251,4 @@ int _compare(Uint8List a, Uint8List b) {
   if (aa == bb) return 0;
   if (aa > bb) return 1;
   return -1;
-}
-
-/// Decode a BigInt from bytes in big-endian encoding.
-BigInt _decodeBigInt(List<int> bytes) {
-  BigInt result = new BigInt.from(0);
-  for (int i = 0; i < bytes.length; i++) {
-    result += new BigInt.from(bytes[bytes.length - i - 1]) << (8 * i);
-  }
-  return result;
-}
-
-var _byteMask = new BigInt.from(0xff);
-
-/// Encode a BigInt into bytes using big-endian encoding.
-Uint8List _encodeBigInt(BigInt number) {
-  int needsPaddingByte;
-  int rawSize;
-
-  if (number > BigInt.zero) {
-    rawSize = (number.bitLength + 7) >> 3;
-    needsPaddingByte = ((number >> (rawSize - 1) * 8) & negativeFlag) == negativeFlag ? 1 : 0;
-
-    if (rawSize < 32) {
-      needsPaddingByte = 1;
-    }
-  } else {
-    needsPaddingByte = 0;
-    rawSize = (number.bitLength + 8) >> 3;
-  }
-
-  final size = rawSize < 32 ? rawSize + needsPaddingByte : rawSize;
-  var result = new Uint8List(size);
-  for (int i = 0; i < size; i++) {
-    result[size - i - 1] = (number & _byteMask).toInt();
-    number = number >> 8;
-  }
-  return result;
 }
