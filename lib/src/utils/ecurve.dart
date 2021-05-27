@@ -1,20 +1,16 @@
 import 'dart:typed_data';
 import 'package:hex/hex.dart';
 import "package:pointycastle/ecc/curves/secp256k1.dart";
-import "package:pointycastle/api.dart"
-    show PrivateKeyParameter, PublicKeyParameter;
-import 'package:pointycastle/ecc/api.dart'
-    show ECPrivateKey, ECPublicKey, ECSignature, ECPoint;
+import "package:pointycastle/api.dart" show PrivateKeyParameter, PublicKeyParameter;
+import 'package:pointycastle/ecc/api.dart' show ECPrivateKey, ECPublicKey, ECSignature, ECPoint;
 import "package:pointycastle/signers/ecdsa_signer.dart";
 import 'package:pointycastle/macs/hmac.dart';
 import "package:pointycastle/digests/sha256.dart";
 import 'package:pointycastle/src/utils.dart';
 
 final ZERO32 = Uint8List.fromList(List.generate(32, (index) => 0));
-final EC_GROUP_ORDER = HEX
-    .decode("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
-final EC_P = HEX
-    .decode("fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f");
+final EC_GROUP_ORDER = HEX.decode("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
+final EC_P = HEX.decode("fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f");
 final secp256k1 = new ECCurve_secp256k1();
 final n = secp256k1.n;
 final G = secp256k1.G;
@@ -77,16 +73,14 @@ bool isOrderScalar(x) {
 bool isSignature(Uint8List value) {
   Uint8List r = value.sublist(0, 32);
   Uint8List s = value.sublist(32, 64);
-  return value.length == 64 &&
-      _compare(r, EC_GROUP_ORDER as Uint8List) < 0 &&
-      _compare(s, EC_GROUP_ORDER as Uint8List) < 0;
+  return value.length == 64 && _compare(r, EC_GROUP_ORDER as Uint8List) < 0 && _compare(s, EC_GROUP_ORDER as Uint8List) < 0;
 }
 
 bool _isPointCompressed(Uint8List p) {
   return p[0] != 0x04;
 }
 
-bool assumeCompression(bool value, Uint8List pubkey) {
+bool assumeCompression(bool? value, Uint8List? pubkey) {
   if (value == null && pubkey != null) return _isPointCompressed(pubkey);
   if (value == null) return true;
   return value;
@@ -207,8 +201,7 @@ Uint8List getEncoded(ECPoint P, compressed) {
 
 ECSignature deterministicGenerateK(Uint8List hash, Uint8List x) {
   final signer = new ECDSASigner(null, new HMac(new SHA256Digest(), 64));
-  var pkp =
-      new PrivateKeyParameter(new ECPrivateKey(_decodeBigInt(x), secp256k1));
+  var pkp = new PrivateKeyParameter(new ECPrivateKey(_decodeBigInt(x), secp256k1));
   signer.init(true, pkp);
 //  signer.init(false, new PublicKeyParameter(new ECPublicKey(secp256k1.curve.decodePoint(x), secp256k1)));
   return signer.generateSignature(hash) as ECSignature;
@@ -240,8 +233,7 @@ Uint8List _encodeBigInt(BigInt number) {
 
   if (number > BigInt.zero) {
     rawSize = (number.bitLength + 7) >> 3;
-    needsPaddingByte =
-        ((number >> (rawSize - 1) * 8) & negativeFlag) == negativeFlag ? 1 : 0;
+    needsPaddingByte = ((number >> (rawSize - 1) * 8) & negativeFlag) == negativeFlag ? 1 : 0;
 
     if (rawSize < 32) {
       needsPaddingByte = 1;

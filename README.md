@@ -64,3 +64,8 @@ main() {
 }
 
 ```
+
+## Contributor
+  * anicdh <anic.dh@gmail.com>
+  * p3root 
+  * jcramer (null-safety)

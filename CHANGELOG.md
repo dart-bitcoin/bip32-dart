@@ -34,3 +34,6 @@
 ## 1.0.10
 
 - Fix sign
+
+## 2.0.0
+- Add null-safety
